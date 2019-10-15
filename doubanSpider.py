@@ -112,7 +112,7 @@ def print_book_lists_excel(book_lists,book_tag_lists):
     wb=Workbook(write_only = True)
     ws=[]
     for i in range(len(book_tag_lists)):
-        ws.append(wb.create_sheet(title=book_tag_lists[i].decode())) #utf8->unicode
+        ws.append(wb.create_sheet(title=book_tag_lists[i])) #utf8->unicode
     for i in range(len(book_tag_lists)): 
         ws[i].append(['序号','书名','评分','评价人数','作者','出版社'])
         count=1
