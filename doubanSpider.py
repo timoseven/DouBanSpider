@@ -121,7 +121,7 @@ def print_book_lists_excel(book_lists,book_tag_lists):
             count+=1
     save_path='book_list'
     for i in range(len(book_tag_lists)):
-        save_path+=('-'+book_tag_lists[i].decode())
+        save_path+=('-'+book_tag_lists[i])
     save_path+='.xlsx'
     wb.save(save_path)
 
