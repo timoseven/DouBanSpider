@@ -34,9 +34,6 @@ def login_douban():
     # 登录URL
     login_url = 'https://accounts.douban.com/login'
     # 请求头
-    headers = {
-    'User-Agent':'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36'
-    }
     data = {
         'source':'index_nav',
         'redir':'https://www.douban.com/',
@@ -45,7 +42,7 @@ def login_douban():
         'login':'登录'
     }
     try:
-        r = s.post(login_url, headers=headers, data=data)
+        r = s.post(login_url, headers=hds[0], data=data)
         r.raise_for_status()
     except:
         print('登录请求失败')
@@ -71,7 +68,7 @@ def book_spider(book_tag):
 #            plain_text=str(source_code)   
             r = s.get(url, headers=hds[page_num%len(hds)])
             plain_text=r.text
-        except (urllib.request.HTTPError, urllib.request.URLError) as e:
+        except (requests.exceptions.HTTPError, requests.exceptions.Timeout) as e:
             print (e)
             continue
   

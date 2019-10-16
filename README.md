@@ -1,6 +1,10 @@
 ## 豆瓣读书爬虫
 
-Python所写，豆瓣读书的爬虫，方便大家搜罗各种美美书！
+Python3.6.9所写，豆瓣读书的爬虫，方便大家搜罗各种美美书！
+
+这个分支里添加了mysql插入的功能
+
+
 
 
 ### 更新
@@ -14,53 +18,7 @@ Python所写，豆瓣读书的爬虫，方便大家搜罗各种美美书！
 
 好书一下的首页如下。输入你所想查找相关书的关键字、评价分数高于的数值（一般高于8分就是不错的书，高于9分就是很好的书）、评价人数多于的数值（评价分数又高、人数又多的往往是经典之作），选定排序方法，点击好书一下就可以查找好书啦！
 
-![Aaron Swartz](https://github.com/lanbing510/DouBanSpider/raw/master/screenshots/sobook1.png)
-
-查找结果截图示例如下。
-
-![Aaron Swartz](https://github.com/lanbing510/DouBanSpider/raw/master/screenshots/sobook2.jpg)
-
-最后希望该工具能对你有所帮助，让你在挑选好书不断学习的路上走的更远！
-
-### 更新
-
-最近爬下了豆瓣所有的图书信息（3088633本，2138386KB），并做了一个界面方面与数据库交互来搜罗好书。 注：这里的代码不是爬下所有书籍所用的代码，仅供参考。有机会的时候再公开代码和爬下的所有数据。
-
-
-交互界面截图示例：
-
-![Aaron Swartz](https://github.com/lanbing510/DouBanSpider/raw/master/screenshots/sobook.jpg)
-
-查询结果截图示例：
-
-![Aaron Swartz](https://github.com/lanbing510/DouBanSpider/raw/master/screenshots/result.jpg)
-
-
-### 更新
-
-最近爬书发现豆瓣的页面规则发生了变化，导致不能爬到评价人数，由此对代码进行了相应的更新，并爬了一些新的数据(并不全)。
-
-
-
-### 实现功能
-
-1 可以爬下豆瓣读书标签下的所有图书 
-
-2 按评分排名依次存储
-
-3 存储到Excel中，可方便大家筛选搜罗，比如筛选评价人数>1000的高分书籍；可依据不同的主题存储到Excel不同的Sheet 
-
-4 采用User Agent伪装为浏览器进行爬取，并加入随机延时来更好的模仿浏览器行为，避免爬虫被封（更新于 2015-5-20）
-
-### 效果截图
-
-试着小小运行了下，爬了七八万本书，结果在book_list.xlsx中，截图如下：
-
-![Aaron Swartz](https://github.com/lanbing510/DouBanSpider/raw/master/screenshots/douban.jpg)
-
-
-代码刚写一小时，更多功能有待增加
-
+http://sobook.lanbing510.info
 
 声明：受@plough同学启发，再其代码基础上进行的创作，感谢@plough
 
