@@ -83,6 +83,7 @@ def book_spider(book_tag):
             try_times=0 #set 0 when got valid information
         page_num+=1
         print ('Downloading Information From Page %d' % page_num)
+#        print (type(book_list))
     return book_list
 
 
@@ -112,7 +113,8 @@ def print_book_lists_excel(book_lists,book_tag_lists):
     wb=Workbook(write_only = True)
     ws=[]
     for i in range(len(book_tag_lists)):
-        ws.append(wb.create_sheet(title=u'book_tag_lists[i]')) #utf8->unicode
+        print(type(book_tag_lists[i]))
+        ws.append(wb.create_sheet(title=book_tag_lists[i].encode('utf-8').decode('unicode_escape'))) #utf8->unicode
     for i in range(len(book_tag_lists)): 
         ws[i].append(['序号','书名','评分','评价人数','作者','出版社'])
         count=1
@@ -121,7 +123,7 @@ def print_book_lists_excel(book_lists,book_tag_lists):
             count+=1
     save_path='book_list'
     for i in range(len(book_tag_lists)):
-        save_path+=('-'+u'book_tag_lists[i]')
+        save_path+=('-'+book_tag_lists[i].encode('utf-8').decode('unicode_escape'))
     save_path+='.xlsx'
     wb.save(save_path)
 
@@ -142,6 +144,5 @@ if __name__=='__main__':
     #book_tag_lists = ['个人管理','时间管理','投资','文化','宗教']
     book_tag_lists = ['linux']
     book_lists=do_spider(book_tag_lists)
-    print(book_lists)
     print_book_lists_excel(book_lists,book_tag_lists)
     
