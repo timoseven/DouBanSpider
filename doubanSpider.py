@@ -10,44 +10,48 @@ from bs4 import BeautifulSoup
 from openpyxl import Workbook
 from imp import reload
 import re
+import configparser
+
+cp = configparser.SafeConfigParser()
+cp.read('.passwd')
+un=cp.get('douban', 'username')
+pw=cp.get('douban', 'password')
 
 reload(sys)
 #sys.setdefaultencoding('utf8')
 
+s = requests.Session()
 
 
 #Some User Agents
-hds=[{'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'},\
-{'User-Agent':'Mozilla/5.0 (Windows NT 6.2) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.12 Safari/535.11'},\
-{'User-Agent':'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; Trident/6.0)'},\
-{'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36'}]
+hds=[{'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36'}]
 
-
-def douban_login():
-    loginurl = 'https://accounts.douban.com/login'
+def login_douban():
+    """
+    登录豆瓣
+    :return:
+    """
+    # 登录URL
+    login_url = 'https://accounts.douban.com/login'
+    # 请求头
     headers = {
-        'User-Agent':'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36'
+    'User-Agent':'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36'
     }
-    login_response = requests.get(url=loginurl,headers=headers)#获取登录界面的信息
-    
-    verifyCodeUrl = re.compile('<img id="captcha_image" src="(.*?)"',re.S).findall(login_response.text)[0]#通过正则拿到图片的url
-    captcha_id = re.compile('id=(.*?)&',re.S).findall(verifyCodeUrl)[0]#获取表单中的url字段，同样用正则匹配
-    verifyCodeResponse = requests.get(url=verifyCodeUrl,headers=headers)#获取验证码图片
-    
-    with open('im_code.jpg','wb') as f:
-        f.write(verifyCodeResponse.content)#保存验证码
-        f.close()
-    captcha_solution = input("请输入验证码:")
-    datas = {
+    data = {
         'source':'index_nav',
         'redir':'https://www.douban.com/',
-        'form_email':'xxx',
-        'form_password':'xxx',
-        'captcha-solution':captcha_solution,
-        'captcha-id':captcha_id,
+        'form_email':"un",
+        'form_password':"pw",
         'login':'登录'
     }
-    LoginPost = requests.post(url=loginurl,data=datas,headers=headers)
+    try:
+        r = s.post(login_url, headers=headers, data=data)
+        r.raise_for_status()
+    except:
+        print('登录请求失败')
+        return 0
+    # 打印请求结果
+    return 1
 
 
 def book_spider(book_tag):
@@ -55,21 +59,18 @@ def book_spider(book_tag):
     book_list=[]
     try_times=0
     
-    while(1):
+    while(page_num < 1):
         #url='http://www.douban.com/tag/%E5%B0%8F%E8%AF%B4/book?start=0' # For Test
         url='http://www.douban.com/tag/'+urllib.parse.quote(book_tag)+'/book?start='+str(page_num*15)
         time.sleep(np.random.rand()*5)
         
         #Last Version
         try:
-            req = urllib.request.Request(url, headers=hds[page_num%len(hds)])
-            req.add_header('Cookie', 'bid=dLa8VKz62II; gr_user_id=7252e962-4dec-4193-9a11-f6f15041afe1; _vwo_uuid_v2=DD190F064E7A6F013BED8DF723175DEB3|468e82a1cae5558df9d058e0071963ad; ll="108288"; douban-fav-remind=1; push_noty_num=0; push_doumail_num=0; \
-                           douban-profile-remind=1; _ga=GA1.2.467025163.1555687286; __utmc=30149280; __utmv=30149280.203; viewed="6025290_26304954_4864832_26304087_26695174_4163938_1064223_1291204_6749832_6853203"; \
-                           __utmz=30149280.1571151034.38.10.utmcsr=accounts.douban.com|utmccn=(referral)|utmcmd=referral|utmcct=/passport/login; ap_v=0,6.0; \
-                           _pk_ref.100001.8cb4=%5B%22%22%2C%22%22%2C1571193624%2C%22https%3A%2F%2Faccounts.douban.com%2Fpassport%2Flogin%3Fredir%3Dhttps%253A%252F%252Fwww.douban.com%252Ftag%252FLinux%252Fbook%253Fstart%253D0%22%5D; _pk_ses.100001.8cb4=*; \
-                           __utma=30149280.467025163.1555687286.1571191561.1571193625.40; dbcl2="2036823:uJUUjmrY0ZM"; ck=-4gZ; __utmt=1; _pk_id.100001.8cb4=768ff796c14c20f8.1563711055.25.1571194500.1571191560.; __utmb=30149280.8.10.1571193625')
-            source_code = urllib.request.urlopen(req).read()
-            plain_text=str(source_code)   
+#            req = urllib.request.Request(url, headers=hds[page_num%len(hds)])
+#            source_code = urllib.request.urlopen(req).read()
+#            plain_text=str(source_code)   
+            r = s.get(url, headers=hds[page_num%len(hds)])
+            plain_text=r.text
         except (urllib.request.HTTPError, urllib.request.URLError) as e:
             print (e)
             continue
@@ -118,6 +119,7 @@ def book_spider(book_tag):
         print ('Downloading Information From Page %d' % page_num)
 #        print (type(book_list))
     return book_list
+
 
 
 def get_people_num(url):
@@ -175,7 +177,8 @@ if __name__=='__main__':
     #book_tag_lists = ['科普','经典','生活','心灵','文学']
     #book_tag_lists = ['科幻','思维','金融']
     #book_tag_lists = ['个人管理','时间管理','投资','文化','宗教']
-    book_tag_lists = ['linux']
-    book_lists=do_spider(book_tag_lists)
-    print_book_lists_excel(book_lists,book_tag_lists)
+    if login_douban():
+        book_tag_lists = ['linux']
+        book_lists=do_spider(book_tag_lists)
+        print_book_lists_excel(book_lists,book_tag_lists)
     
