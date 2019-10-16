@@ -100,3 +100,8 @@ venv.bak/
 dmypy.json
 # Pyre type checker
 .pyre/
+
+# local config
+.password
+.config
+.passwd
