@@ -1,8 +1,10 @@
 import requests
 import configparser
 
-cp = ConfigParser.SafeConfigParser()
-cp.read('.password')
+cp = configparser.SafeConfigParser()
+cp.read('.passwd')
+un=cp.get('douban', 'username')
+pw=cp.get('douban', 'password')
 
 loginurl = 'https://accounts.douban.com/login'
 headers = {
@@ -11,8 +13,8 @@ headers = {
 data = {
     'source':'index_nav',
     'redir':'https://www.douban.com/',
-    'form_email':'xxxx',
-    'form_password':'xxxx',
+    'form_email':"un",
+    'form_password':"pw",
     'login':'登录'
 }
 login_response = requests.post(url=loginurl,headers=headers)
