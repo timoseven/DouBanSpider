@@ -65,7 +65,7 @@ def book_spider(book_tag):
     try_times=0
     book_list=[]
 
-    while(page_num < 1):
+    while(1):
         #url='http://www.douban.com/tag/%E5%B0%8F%E8%AF%B4/book?start=0' # For Test
         url='http://www.douban.com/tag/'+urllib.parse.quote(book_tag)+'/book?start='+str(page_num*15)
         time.sleep(np.random.rand()*5)
@@ -107,7 +107,6 @@ def book_spider(book_tag):
                 author_info ='暂无'
             try:
                 book_price = float(re.findall(r'(\d+\.\d+|\d+)', (desc_list[-1]))[0])
-                print(book_price)
             except:
                 book_price = 0.0
             try:
@@ -130,13 +129,14 @@ def book_spider(book_tag):
                 people_num=int(0)
 
             #book_title,book_douban_id,book_rate,book_author,book_rate_user,book_press,book_press_date,book_price
-            book_list=(title,douban_id,rating,author_info,people_num,pub_press,press_date,book_price,book_tag)
-            tuple_book_list=tuple(book_list)
+            book_single=(title,douban_id,rating,author_info,people_num,pub_press,press_date,book_price,book_tag)
+            book_list.append(book_single)
             try_times=0 #set 0 when got valid information
         page_num+=1
         print ('Downloading Information From Page %d' % page_num)
 #        print (type(book_list))
-    return tuple_book_list
+#    tuple_book_list=tuple(book_list)
+    return book_list
 
 
 
@@ -160,14 +160,14 @@ def do_spider(book_tag_lists):
         book_list=book_spider(book_tag)
 #        book_lists=book_lists.append(book_list)
 #        tuple_book_lists=tuple(book_lists)
-        print(type(book_list))
-        print(book_list)
+        print(len(book_list[0]))
+        print(book_list[0])
 #        book_list=sorted(book_list,key=lambda x:x[1],reverse=True)
         cursor = connection.cursor()
         cursor.executemany(
-            'INSERT INTO bookinfo ("book_title", "book_douban_id","book_rate","book_author","book_rate_user","book_press","book_press_date","book_price","book_tag") VALUES (%s, %d, %f, %s, %d, %s, %s, %f, %s)', [
-            book_list
-        ])
+            'INSERT INTO bookinfo (book_title, book_douban_id,book_rate,book_author,book_rate_user,book_press,book_press_date,book_price,book_tag) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)', book_list)
+#        SQL='INSERT INTO bookinfo ("book_title", "book_douban_id","book_rate","book_author","book_rate_user","book_press","book_press_date","book_price","book_tag") VALUES ("%s", %d, %f, "%s", %d, "%s", "%s", %f, "%s")' % book_list[0]
+#        print(SQL)
         connection.commit()
 #        print(type(book_list))
 #        book_lists.append(book_list)
