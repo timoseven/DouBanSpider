@@ -11,6 +11,15 @@ from openpyxl import Workbook
 from imp import reload
 import re
 import configparser
+import pymysql
+
+connection = pymysql.connect(host='127.0.0.1',
+                             port=3306,
+                             user='douban',
+                             password='123456',
+                             db='douban',
+                             charset='utf8')
+
 
 cp = configparser.SafeConfigParser()
 cp.read('.passwd')
@@ -53,8 +62,8 @@ def login_douban():
 
 def book_spider(book_tag):
     page_num=0;
-    book_list=[]
     try_times=0
+    book_list=[]
 
     while(page_num < 1):
         #url='http://www.douban.com/tag/%E5%B0%8F%E8%AF%B4/book?start=0' # For Test
@@ -87,45 +96,47 @@ def book_spider(book_tag):
 
         for book_info in list_soup.findAll('dd'):
             title = book_info.find('a', {'class':'title'}).string.strip()
-            douban_id = book_info.a.get('href').split('/')[4]
+            douban_id = int(book_info.a.get('href').split('/')[4])
             desc = book_info.find('div', {'class':'desc'}).string.strip()
             desc_list = desc.split('/')
             book_url = book_info.find('a', {'class':'title'}).get('href')
 
             try:
-                author_info = desc_list[0:-3]
+                author_info = str(desc_list[0:-3])
             except:
                 author_info ='暂无'
             try:
-                book_price = re.findall(r'(\d+\.+\d+|\d+)', ([desc_list[-1]))
+                book_price = float(re.findall(r'(\d+\.\d+|\d+)', (desc_list[-1]))[0])
+                print(book_price)
             except:
-                book_price = '0.0'
+                book_price = 0.0
             try:
-                press_date = [desc_list[-2]
+                press_date = str(desc_list[-2])
             except:
                 press_date = '0001-01-01'
             try:
-                pub_press = desc_list[-3]
+                pub_press = str(desc_list[-3])
             except:
                 pub_press = '暂无'
             try:
-                rating = book_info.find('span', {'class':'rating_nums'}).string.strip()
+                rating = float(book_info.find('span', {'class':'rating_nums'}).string.strip())
             except:
-                rating='0.0'
+                rating=float(0.0)
             try:
                 #people_num = book_info.findAll('span')[2].string.strip()
-                people_num = get_people_num(book_url)
-                people_num = people_num.strip('人评价')
+                people_snum = get_people_num(book_url)
+                people_num = int(people_snum.strip('人评价'))
             except:
-                people_num ='0'
+                people_num=int(0)
 
             #book_title,book_douban_id,book_rate,book_author,book_rate_user,book_press,book_press_date,book_price
-            book_list.append([title,douban_id,rating,author_info,people_num,pub_press,press_date,book_price])
+            book_list=(title,douban_id,rating,author_info,people_num,pub_press,press_date,book_price,book_tag)
+            tuple_book_list=tuple(book_list)
             try_times=0 #set 0 when got valid information
         page_num+=1
         print ('Downloading Information From Page %d' % page_num)
 #        print (type(book_list))
-    return book_list
+    return tuple_book_list
 
 
 
@@ -143,31 +154,51 @@ def get_people_num(url):
 
 
 def do_spider(book_tag_lists):
-    book_lists=[]
+#    book_lists=[]
+    cursor = connection.cursor()
     for book_tag in book_tag_lists:
         book_list=book_spider(book_tag)
-        book_list=sorted(book_list,key=lambda x:x[1],reverse=True)
-        book_lists.append(book_list)
-    return book_lists
+#        book_lists=book_lists.append(book_list)
+#        tuple_book_lists=tuple(book_lists)
+        print(type(book_list))
+        print(book_list)
+#        book_list=sorted(book_list,key=lambda x:x[1],reverse=True)
+        cursor = connection.cursor()
+        cursor.executemany(
+            'INSERT INTO bookinfo ("book_title", "book_douban_id","book_rate","book_author","book_rate_user","book_press","book_press_date","book_price","book_tag") VALUES (%s, %d, %f, %s, %d, %s, %s, %f, %s)', [
+            book_list
+        ])
+        connection.commit()
+#        print(type(book_list))
+#        book_lists.append(book_list)
+#    return book_lists
 
-
-def print_book_lists_excel(book_lists,book_tag_lists):
-    wb=Workbook(write_only = True)
-    ws=[]
-    for i in range(len(book_tag_lists)):
-        print(type(book_tag_lists[i]))
-        ws.append(wb.create_sheet(title=book_tag_lists[i].encode('utf-8').decode('unicode_escape'))) #utf8->unicode
-    for i in range(len(book_tag_lists)):
-        ws[i].append(['序号','书名','评分','评价人数','作者','出版社'])
-        count=1
-        for bl in book_lists[i]:
-            ws[i].append([count,bl[0],float(bl[1]),int(bl[2]),bl[3],bl[4]])
-            count+=1
-    save_path='book_list'
-    for i in range(len(book_tag_lists)):
-        save_path+=('-'+book_tag_lists[i].encode('utf-8').decode('unicode_escape'))
-    save_path+='.xlsx'
-    wb.save(save_path)
+#def do_spider(book_tag_lists):
+#    book_lists=[]
+#    for book_tag in book_tag_lists:
+#        book_list=book_spider(book_tag)
+#        book_list=sorted(book_list,key=lambda x:x[1],reverse=True)
+#        book_lists.append(book_list)
+#    return book_lists
+#
+#
+#def print_book_lists_excel(book_lists,book_tag_lists):
+#    wb=Workbook(write_only = True)
+#    ws=[]
+#    for i in range(len(book_tag_lists)):
+#        print(type(book_tag_lists[i]))
+#        ws.append(wb.create_sheet(title=book_tag_lists[i].encode('utf-8').decode('unicode_escape'))) #utf8->unicode
+#    for i in range(len(book_tag_lists)):
+#        ws[i].append(['序号','书名','评分','评价人数','作者','出版社'])
+#        count=1
+#        for bl in book_lists[i]:
+#            ws[i].append([count,bl[0],float(bl[1]),int(bl[2]),bl[3],bl[4]])
+#            count+=1
+#    save_path='book_list'
+#    for i in range(len(book_tag_lists)):
+#        save_path+=('-'+book_tag_lists[i].encode('utf-8').decode('unicode_escape'))
+#    save_path+='.xlsx'
+#    wb.save(save_path)
 
 
 
@@ -186,5 +217,5 @@ if __name__=='__main__':
     #book_tag_lists = ['个人管理','时间管理','投资','文化','宗教']
     if login_douban():
         book_tag_lists = ['linux']
-        book_lists=do_spider(book_tag_lists)
-        print_book_lists_excel(book_lists,book_tag_lists)
+        do_spider(book_tag_lists)
+#        print_book_lists_excel(book_lists,book_tag_lists)

@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS `bookinfo`(
    `book_press` VARCHAR(100) NOT NULL,
    `book_press_date` DATE,
    `book_price` FLOAT(6,2) NOT NULL,
-   `createtime` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+   `book_tag` VARCHAR(100) NOT NULL,
+   `createtime` DATE DEFAULT CURRENT_TIMESTAMP,
    PRIMARY KEY ( `id` )
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
