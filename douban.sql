@@ -10,10 +10,10 @@ CREATE TABLE IF NOT EXISTS `bookinfo`(
    `book_author` VARCHAR(100) NOT NULL,
    `book_rate_user` INT UNSIGNED NOT NULL,
    `book_press` VARCHAR(100) NOT NULL,
-   `book_press_date` DATE,
+   `book_press_date` VARCHAR(20) NOT NULL,
    `book_price` FLOAT(6,2) NOT NULL,
    `book_tag` VARCHAR(100) NOT NULL,
-   `createtime` DATE DEFAULT CURRENT_TIMESTAMP,
+   `createtime` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
    PRIMARY KEY ( `id` )
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -32,27 +32,33 @@ book_title,book_douban_id,book_rate,book_author,book_rate_user,book_press,book_p
 
 
 CREATE USER 'douban'@'127.0.0.1' IDENTIFIED BY '123456';
-GRANT ALL PRIVILEGES ON douban_book.* TO 'douban'@'127.0.0.1' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON douban_book.* TO 'douban'@'127.0.0.1'IDENTIFIED BY '123456';
 
 
 
 # 插入数据(元组或列表)
 effect_row = cursor.execute('INSERT INTO `users` (`name`, `age`) VALUES (%s, %s)', ('mary', 18))
     
-# 插入数据(字典)
-info = {'name': 'fake', 'age': 15}
-effect_row = cursor.execute('INSERT INTO `users` (`name`, `age`) VALUES (%(name)s, %(age)s)', info)
-    
-connection.commit()
 
 
-cursor = connection.cursor()
-    
-# 批量插入
-effect_row = cursor.executemany(
-    'INSERT INTO `users` (`name`, `age`) VALUES (%s, %s)', [
-        ('hello', 13),
-        ('fake', 28),
-    ])
-    
-connection.commit()
+Traceback (most recent call last):
+  File "doubanSpider.py", line 220, in <module>
+    do_spider(book_tag_lists)
+  File "doubanSpider.py", line 168, in do_spider
+    'INSERT INTO bookinfo (book_title, book_douban_id,book_rate,book_author,book_rate_user,book_press,book_press_date,book_price,book_tag) VALUES ("%s", %d, %f, "%s", %d, "%s", "%s", %f, "%s")', (book_list[0],))
+  File "/Users/timo/.pyenv/versions/venv369/lib/python3.6/site-packages/pymysql/cursors.py", line 199, in executemany
+    self.rowcount = sum(self.execute(query, arg) for arg in args)
+  File "/Users/timo/.pyenv/versions/venv369/lib/python3.6/site-packages/pymysql/cursors.py", line 199, in <genexpr>
+    self.rowcount = sum(self.execute(query, arg) for arg in args)
+  File "/Users/timo/.pyenv/versions/venv369/lib/python3.6/site-packages/pymysql/cursors.py", line 168, in execute
+    query = self.mogrify(query, args)
+  File "/Users/timo/.pyenv/versions/venv369/lib/python3.6/site-packages/pymysql/cursors.py", line 147, in mogrify
+    query = query % self._escape_args(args, conn)
+TypeError: %d format: a number is required, not str
+
+
+https://blog.csdn.net/jy1690229913/article/details/79407224
+在写sql语句时，不管字段为什么类型，占位符统一使用%s,且不能加上引号
+
+
+https://github.com/PyMySQL/PyMySQL/blob/master/pymysql/converters.py

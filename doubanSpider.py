@@ -160,8 +160,7 @@ def do_spider(book_tag_lists):
         book_list=book_spider(book_tag)
 #        book_lists=book_lists.append(book_list)
 #        tuple_book_lists=tuple(book_lists)
-        print(len(book_list[0]))
-        print(book_list[0])
+        print(book_list)
 #        book_list=sorted(book_list,key=lambda x:x[1],reverse=True)
         cursor = connection.cursor()
         cursor.executemany(
@@ -216,6 +215,6 @@ if __name__=='__main__':
     #book_tag_lists = ['科幻','思维','金融']
     #book_tag_lists = ['个人管理','时间管理','投资','文化','宗教']
     if login_douban():
-        book_tag_lists = ['linux']
+        book_tag_lists = ['科普','心理','股票','创业','产品','互联网','管理']
         do_spider(book_tag_lists)
 #        print_book_lists_excel(book_lists,book_tag_lists)
